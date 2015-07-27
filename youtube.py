@@ -12,7 +12,7 @@ except ImportError:
 class YoutubeMe(google_service.Gooooogle):
 
     SCOPES = 'https://www.googleapis.com/auth/youtube.readonly'
-    CLIENT_SECRETS_FILE = 'client_secret_youtube.json'
+    CLIENT_SECRET_FILE = 'client_secret_youtube.json'
     CREDENTIALS_NAME = 'youtube-credential.json'
     APPLICATION_NAME = 'Youtube got playlists'
     API_NAME = "youtube"

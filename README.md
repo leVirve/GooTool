@@ -14,6 +14,9 @@ pip install --upgrade google-api-python-client
 python SOME_EXAMPLE.py
 ```
 
-**client_secret.json** 請至![Google開發者中心](https://console.developers.google.com/project)申請。
+---
 
-![詳細說明](https://developers.google.com/drive/web/about-auth)
+###必要檔案：
+OAuth Client需要提供辨識資料，詳細請查Wikipedia [OAAuth](https://zh.wikipedia.org/wiki/OAuth)
+
+client_secret.json：請至[Google開發者中心](https://console.developers.google.com/project)申請。[詳細說明](https://developers.google.com/drive/web/about-auth)

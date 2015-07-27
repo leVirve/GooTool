@@ -55,3 +55,7 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# Secret
+.credentials/
+client_secret.json

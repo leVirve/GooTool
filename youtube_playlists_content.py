@@ -1,84 +1,95 @@
-import os
-import sys
 import httplib2
-from apiclient.discovery import build
-from oauth2client.client import flow_from_clientsecrets
-from oauth2client.file import Storage
-from oauth2client.tools import argparser, run_flow
+import os
+
+import oauth2client
+from apiclient import discovery
+from oauth2client import client, tools
+
+try:
+    import argparse
+    flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
+except ImportError:
+    flags = None
 
 
-# The CLIENT_SECRETS_FILE variable specifies the name of a file that contains
-# the OAuth 2.0 information for this application, including its client_id and
-# client_secret. You can acquire an OAuth 2.0 client ID and client secret from
-# the {{ Google Cloud Console }} at
-# {{ https://cloud.google.com/console }}.
-# Please ensure that you have enabled the YouTube Data API for your project.
-# For more information about using OAuth2 to access the YouTube Data API, see:
-#   https://developers.google.com/youtube/v3/guides/authentication
-# For more information about the client_secrets.json file format, see:
-#   https://developers.google.com/api-client-library/python/guide/aaa_client_secrets
-CLIENT_SECRETS_FILE = "Youtube-OAuth-client_secret.json"
+class YoutubeMe():
 
-MISSING_CLIENT_SECRETS_MESSAGE = """
-WARNING: Please configure OAuth 2.0
-To make this sample run you will need to populate the client_secrets.json file
-found at:
-   %s
-with information from the {{ Cloud Console }}
-{{ https://cloud.google.com/console }}
-For more information about the client_secrets.json file format, please visit:
-https://developers.google.com/api-client-library/python/guide/aaa_client_secrets
-""" % os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                   CLIENT_SECRETS_FILE))
+    SCOPES = 'https://www.googleapis.com/auth/youtube.readonly'
+    CLIENT_SECRETS_FILE = 'client_secret.json'
+    API_NAME = "youtube"
+    API_VERSION = 'v3'
 
-YOUTUBE_READONLY_SCOPE = "https://www.googleapis.com/auth/youtube.readonly"
-YOUTUBE_API_SERVICE_NAME = "youtube"
-YOUTUBE_API_VERSION = "v3"
+    def __init__(self):
+        self.credentials = self._get_credentials()
+        self.service = self._new_service()
 
-flow = flow_from_clientsecrets(
-    CLIENT_SECRETS_FILE,
-    message=MISSING_CLIENT_SECRETS_MESSAGE,
-    scope=YOUTUBE_READONLY_SCOPE)
+    def _get_credentials(self):
+        """Gets valid user credentials from storage.
 
-storage = Storage("%s-oauth2.json" % sys.argv[0])
-credentials = storage.get()
+        If nothing has been stored, or if the stored credentials are invalid,
+        the OAuth2 flow is completed to obtain the new credentials.
 
-if credentials is None or credentials.invalid:
-    flags = argparser.parse_args()
-    credentials = run_flow(flow, storage, flags)
+        Returns:
+            Credentials, the obtained credential.
+        """
+        credential_dir = os.path.join('./', '.credentials')
+        if not os.path.exists(credential_dir):
+            os.makedirs(credential_dir)
+        credential_path = os.path.join(credential_dir, 'youtube-credential.json')
 
-youtube = build(
-    YOUTUBE_API_SERVICE_NAME,
-    YOUTUBE_API_VERSION,
-    http=credentials.authorize(httplib2.Http()))
+        store = oauth2client.file.Storage(credential_path)
+        credentials = store.get()
+        if not credentials or credentials.invalid:
+            flow = client.flow_from_clientsecrets(
+                YoutubeMe.CLIENT_SECRETS_FILE, YoutubeMe.SCOPES)
+            flow.user_agent = YoutubeMe.APPLICATION_NAME
+            if flags:
+                credentials = tools.run_flow(flow, store, flags)
+            else:  # Needed only for compatability with Python 2.6
+                credentials = tools.run(flow, store)
+        return credentials
 
-# Retrieve at most 50 playlists at once
-playlists_response = youtube.playlists().list(
-    mine=True,
-    part="snippet",
-    maxResults=50
-).execute()
+    def _new_service(self):
+        """Creates a Google Drive API service object.
+        """
+        httplib = self.credentials.authorize(httplib2.Http())
+        return discovery.build(
+            YoutubeMe.API_NAME,
+            YoutubeMe.API_VERSION,
+            http=httplib)
 
-for playlist in playlists_response["items"]:
-    uploads_list_id = playlist["id"]
+    def get_playlists(self):
+        """Retrieve at most 50 playlists at once
+        """
+        playlists_response = self.service.playlists().list(
+            mine=True,
+            part="snippet",
+            maxResults=50
+        ).execute()
 
-    print('========= 清單 %s ==========' % playlist['snippet']['title'])
+        f = open('youtube-lists.txt', 'w', encoding='utf8')
+        for playlist in playlists_response["items"]:
+            uploads_list_id = playlist["id"]
 
-    # Retrieve the list of videos uploaded to the authenticated user's channel.
-    playlistitems_list_request = youtube.playlistItems().list(
-        playlistId=uploads_list_id,
-        part="snippet",
-        maxResults=50
-    )
+            f.write('========= 清單 %s ==========\n' % playlist['snippet']['title'])
 
-    while playlistitems_list_request:
-        playlistitems_list_response = playlistitems_list_request.execute()
+            playlistitems_list_request = self.service.playlistItems().list(
+                playlistId=uploads_list_id,
+                part="snippet",
+                maxResults=50
+            )
 
-        # Print information about each video.
-        for playlist_item in playlistitems_list_response["items"]:
-            title = playlist_item["snippet"]["title"]
-            video_id = playlist_item["snippet"]["resourceId"]["videoId"]
-            print("%s (%s)" % (title, video_id))
+            while playlistitems_list_request:
+                playlistitems_list_response = playlistitems_list_request.execute()
 
-        playlistitems_list_request = youtube.playlistItems().list_next(
-            playlistitems_list_request, playlistitems_list_response)
+                # Print information about each video.
+                for playlist_item in playlistitems_list_response["items"]:
+                    title = playlist_item["snippet"]["title"]
+                    video_id = playlist_item["snippet"]["resourceId"]["videoId"]
+                    f.write("%s (%s)\n" % (title, video_id))
+
+                playlistitems_list_request = self.service.playlistItems().list_next(playlistitems_list_request, playlistitems_list_response)
+
+if __name__ == '__main__':
+    youtube = YoutubeMe()
+    youtube.get_playlists()

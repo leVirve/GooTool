@@ -16,6 +16,8 @@ class DriveMan():
 
     SCOPES = 'https://www.googleapis.com/auth/drive'
     CLIENT_SECRET_FILE = 'client_secret.json'
+    API_NAME = "drive"
+    API_VERSION = 'v2'
     APPLICATION_NAME = 'Drive download'
 
     def __init__(self):
@@ -52,7 +54,10 @@ class DriveMan():
         """Creates a Google Drive API service object.
         """
         httplib = self.credentials.authorize(httplib2.Http())
-        return discovery.build('drive', 'v2', http=httplib)
+        return discovery.build(
+            DriveMan.API_NAME,
+            DriveMan.API_VERSION,
+            http=httplib)
 
     def get_metadata(self, file_id):
         try:

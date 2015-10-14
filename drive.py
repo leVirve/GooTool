@@ -1,7 +1,8 @@
+import os
 from apiclient import errors
 from oauth2client import tools
 
-import google_service
+from GooTool import google_service
 
 try:
     import argparse
@@ -28,36 +29,29 @@ class DriveMan(google_service.Gooooogle):
         except errors.HttpError as error:
             print('An error occurred: %s' % error)
 
-    def download(self, file_id):
+    def download(self, file_id, folder, callback=None):
         """Download a file's content.
         Args:
         file_id: Drive File id.
         Returns:
         Response data from Google Drive if successful, None otherwise.
         """
+
         drive_file = self.get_metadata(file_id)
         download_url = drive_file.get('downloadUrl')
+
+        name = drive_file.get('originalFilename')
+        filename = os.path.join(folder, name)
+
+        if callback:
+            callback(filename, name)
 
         if download_url:
             resp, content = self.service._http.request(download_url)
             if resp.status == 200:
-                with open(drive_file['originalFilename'], 'wb') as f:
+                with open(filename, 'wb') as f:
                     f.write(content)
-                return resp
+                return name, resp
             else:
                 print('An error occurred: %s' % resp)
-                return None
-        else:
-            # The file doesn't have any content stored on Drive.
-            return None
-
-if __name__ == '__main__':
-    drive = DriveMan()
-
-    # get meta data by id
-    meta = drive.get_metadata('XXXXXXXXXXXXXXXXXXXXX')
-    print(meta)
-
-    # download file by id
-    resp = drive.download('XXXXXXXXXXXXXXXXXXXXX')
-    print(resp)
+        return None

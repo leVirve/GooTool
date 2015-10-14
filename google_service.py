@@ -46,5 +46,5 @@ class Gooooogle():
     def _new_service(self):
         """Creates a Google API service object.
         """
-        httplib = self.credentials.authorize(httplib2.Http())
-        return discovery.build(self.API_NAME, self.API_VERSION, http=httplib)
+        http_auth = self.credentials.authorize(httplib2.Http())
+        return discovery.build(self.API_NAME, self.API_VERSION, http=http_auth)

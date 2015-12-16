@@ -20,8 +20,9 @@ class DriveMan(google_service.Gooooogle):
     API_VERSION = 'v2'
     APPLICATION_NAME = 'Drive download'
 
-    def __init__(self):
+    def __init__(self, folder='.'):
         super(DriveMan, self).__init__()
+        self.folder = folder
 
     def get_metadata(self, file_id):
         try:
@@ -29,7 +30,7 @@ class DriveMan(google_service.Gooooogle):
         except errors.HttpError as error:
             print('An error occurred: %s' % error)
 
-    def download(self, file_id, folder, callback=None):
+    def download(self, file_id, callback=None):
         """Download a file's content.
         Args:
         file_id: Drive File id.
@@ -41,10 +42,10 @@ class DriveMan(google_service.Gooooogle):
         download_url = drive_file.get('downloadUrl')
 
         name = drive_file.get('originalFilename')
-        filename = os.path.join(folder, name)
+        filename = os.path.join(self.folder, name)
 
         if callback:
-            callback(filename, name)
+            callback(name)
 
         if download_url:
             resp, content = self.service._http.request(download_url)

@@ -7,7 +7,6 @@ from gootool.google_service import GoogleClient
 class DriveMan(GoogleClient):
 
     SCOPES = 'https://www.googleapis.com/auth/drive'
-    CLIENT_SECRET_FILE = 'client_secret.json'
     CREDENTIALS_NAME = 'drive-credential.json'
     API_NAME = "drive"
     API_VERSION = 'v2'

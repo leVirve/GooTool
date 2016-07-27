@@ -9,7 +9,7 @@ except ImportError:
     flags = None
 
 
-class YoutubeMe(google_service.Gooooogle):
+class YoutubeMe(google_service.Google):
 
     SCOPES = 'https://www.googleapis.com/auth/youtube.readonly'
     CLIENT_SECRET_FILE = 'client_secret_youtube.json'
@@ -47,7 +47,3 @@ class YoutubeMe(google_service.Gooooogle):
                         playlistitems_list_request,
                         playlistitems_list_response
                     )
-
-if __name__ == '__main__':
-    youtube = YoutubeMe()
-    youtube.get_playlists()

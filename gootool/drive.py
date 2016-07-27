@@ -1,17 +1,10 @@
 import os
 from apiclient import errors
-from oauth2client import tools
 
-from GooTool import google_service
-
-try:
-    import argparse
-    flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
-except ImportError:
-    flags = None
+from gootool import google_service
 
 
-class DriveMan(google_service.Gooooogle):
+class DriveMan(google_service.Google):
 
     SCOPES = 'https://www.googleapis.com/auth/drive'
     CLIENT_SECRET_FILE = 'client_secret.json'

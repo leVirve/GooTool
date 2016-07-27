@@ -1,18 +1,27 @@
-import httplib2
 import os
 
+import httplib2
 import oauth2client
 from apiclient import discovery
 from oauth2client import client, tools
 
+
 try:
     import argparse
-    flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
+    flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args('')
 except ImportError:
     flags = None
 
 
-class Gooooogle():
+class GoogleCLient():
+
+    SCOPES = 'https://www.googleapis.com/auth/'
+    CLIENT_SECRET_FILE = 'client_secret.json'
+    CREDENTIALS_NAME = 'credential.json'
+    API_NAME = 'google-client-default'
+    API_VERSION = 'v2'
+    APPLICATION_NAME = 'google-client'
+
     def __init__(self):
         self.credentials = self._get_credentials()
         self.service = self._new_service()
@@ -37,10 +46,7 @@ class Gooooogle():
             flow = client.flow_from_clientsecrets(
                 self.CLIENT_SECRET_FILE, self.SCOPES)
             flow.user_agent = self.APPLICATION_NAME
-            if flags:
-                credentials = tools.run_flow(flow, store, flags)
-            else:  # Needed only for compatability with Python 2.6
-                credentials = tools.run(flow, store)
+            credentials = tools.run_flow(flow, store, flags)
         return credentials
 
     def _new_service(self):

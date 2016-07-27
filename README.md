@@ -45,6 +45,17 @@ if __name__ == '__main__':
 
 ```
 
+###Config
+- You can configure credentials and client secret files with customized settings.
+
+```python
+youtube = YoutubeMe(
+    credential='./.credentials/youtube-credential.json',
+    client_secret='./client_secret.json',
+    )
+```
+
+
 ---
 
 ###必要檔案：

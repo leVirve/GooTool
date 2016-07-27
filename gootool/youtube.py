@@ -1,4 +1,7 @@
+import logging
 from gootool.google_service import GoogleClient
+
+logger = logging.getLogger('gootool')
 
 
 class YoutubeMe(GoogleClient):
@@ -19,14 +22,16 @@ class YoutubeMe(GoogleClient):
         f = open(self.output, 'w', encoding='utf8')
 
         playlists = self._get_playlists()
+        logger.debug(playlists)
 
-        for playlist in playlists["items"]:
+        for playlist in playlists['items']:
             f.write('===== 清單 %s =====\n' % playlist['snippet']['title'])
 
             request = self._gen_items_request(playlist['id'])
 
             while request:
                 response = request.execute()
+                logger.debug(response)
                 for playlist_item in response['items']:
                     title = playlist_item['snippet']['title']
                     video_id = playlist_item['snippet']['resourceId']['videoId']
@@ -43,6 +48,5 @@ class YoutubeMe(GoogleClient):
 
     def _gen_items_request(self, playlist_id):
         request = self.service.playlistItems().list(
-            playlistId=playlist_id, part="snippet", maxResults=50
-        )
+            playlistId=playlist_id, part="snippet", maxResults=50)
         return request

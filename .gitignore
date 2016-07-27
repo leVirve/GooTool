@@ -58,7 +58,12 @@ target/
 
 # Secret
 .credentials/
+data/
 client_secret*.json
 
 # Testing scripts
+launch.json
 z-*.py
+
+# Output stuff
+*.txt

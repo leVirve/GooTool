@@ -3,30 +3,30 @@ import os
 import httplib2
 import oauth2client
 from apiclient import discovery
-from oauth2client import client, tools
 
 
 try:
     import argparse
-    flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args('')
+    flags = argparse.ArgumentParser(parents=[oauth2client.tools.argparser]).parse_args('')
 except ImportError:
     flags = None
 
 
-class GoogleCLient():
+class GoogleClient():
 
     SCOPES = 'https://www.googleapis.com/auth/'
     CLIENT_SECRET_FILE = 'client_secret.json'
-    CREDENTIALS_NAME = 'credential.json'
+    CREDENTIAL_FOLDER = './.credentials'
+    CREDENTIAL_FILENAME = 'credential.json'
     API_NAME = 'google-client-default'
     API_VERSION = 'v2'
     APPLICATION_NAME = 'google-client'
 
     def __init__(self):
-        self.credentials = self._get_credentials()
-        self.service = self._new_service()
+        self.credentials = self.get_credentials()
+        self.service = self.new_service()
 
-    def _get_credentials(self):
+    def get_credentials(self):
         """Gets valid user credentials from storage.
 
         If nothing has been stored, or if the stored credentials are invalid,
@@ -35,22 +35,34 @@ class GoogleCLient():
         Returns:
             Credentials, the obtained credential.
         """
-        credential_dir = os.path.join('./', '.credentials')
-        if not os.path.exists(credential_dir):
-            os.makedirs(credential_dir)
-        credential_path = os.path.join(credential_dir, self.CREDENTIALS_NAME)
 
-        store = oauth2client.file.Storage(credential_path)
+        store = self._get_credential_store()
         credentials = store.get()
+
         if not credentials or credentials.invalid:
-            flow = client.flow_from_clientsecrets(
-                self.CLIENT_SECRET_FILE, self.SCOPES)
-            flow.user_agent = self.APPLICATION_NAME
-            credentials = tools.run_flow(flow, store, flags)
+            flow = self._gen_auth_flow()
+            credentials = oauth2client.tools.run_flow(flow, store, flags)
         return credentials
 
-    def _new_service(self):
+    def new_service(self):
         """Creates a Google API service object.
         """
         http_auth = self.credentials.authorize(httplib2.Http())
         return discovery.build(self.API_NAME, self.API_VERSION, http=http_auth)
+
+    def _gen_auth_flow(self):
+        flow = oauth2client.client.flow_from_clientsecrets(self.CLIENT_SECRET_FILE, self.SCOPES)
+        flow.user_agent = self.APPLICATION_NAME
+        return flow
+
+    def _get_credential_store(self):
+        path = self._get_credential_path()
+        return oauth2client.file.Storage(path)
+
+    def _get_credential_path(self):
+        credential_dir = self._ensure_dir()
+        return os.path.join(credential_dir, self.CREDENTIAL_FILENAME)
+
+    def _ensure_dir(self):
+        os.makedirs(self.CREDENTIAL_FOLDER, exist_ok=True)
+        return self.CREDENTIAL_FOLDER

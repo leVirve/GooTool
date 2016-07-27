@@ -1,6 +1,6 @@
 from oauth2client import tools
 
-import google_service
+from gootool.google_service import GoogleClient
 
 try:
     import argparse
@@ -9,7 +9,7 @@ except ImportError:
     flags = None
 
 
-class YoutubeMe(google_service.Google):
+class YoutubeMe(GoogleClient):
 
     SCOPES = 'https://www.googleapis.com/auth/youtube.readonly'
     CLIENT_SECRET_FILE = 'client_secret_youtube.json'

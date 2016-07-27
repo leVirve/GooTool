@@ -1,10 +1,10 @@
 import os
 from apiclient import errors
 
-from gootool import google_service
+from gootool.google_service import GoogleClient
 
 
-class DriveMan(google_service.Google):
+class DriveMan(GoogleClient):
 
     SCOPES = 'https://www.googleapis.com/auth/drive'
     CLIENT_SECRET_FILE = 'client_secret.json'

@@ -4,7 +4,7 @@ from gootool.drive import *
 
 
 logger = logging.getLogger('gootool')
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.WARNING)
 
 fh = logging.FileHandler('gootool.log', encoding='utf8')
 ch = logging.StreamHandler()

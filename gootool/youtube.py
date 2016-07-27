@@ -19,34 +19,44 @@ class YoutubeMe(GoogleClient):
     def get_playlists(self):
         """Retrieve at most 50 playlists at once
         """
-        f = open(self.output, 'w', encoding='utf8')
-
-        playlists = self._get_playlists()
+        request = self._gen_playlists_request()
+        playlists = request.execute()
         logger.debug(playlists)
 
-        for playlist in playlists['items']:
-            f.write('===== 清單 %s =====\n' % playlist['snippet']['title'])
+        results = [
+            {
+                'title': playlist['snippet']['title'],
+                'videos': self.get_playlist(playlist['id'])
+            } for playlist in playlists['items']
+        ]
+        return results
 
-            request = self._gen_items_request(playlist['id'])
+    def get_playlist(self, playlist_id):
+        videos = []
+        request = self._gen_items_request(playlist_id)
+        while request:
+            response = request.execute()
+            logger.debug(response)
+            videos += [
+                {
+                    'title': item['snippet']['title'],
+                    'id': item['snippet']['resourceId']['videoId']
+                } for item in response['items']
+            ]
+            request = self._gen_items_next_request(request, response)
+        return videos
 
-            while request:
-                response = request.execute()
-                logger.debug(response)
-                for playlist_item in response['items']:
-                    title = playlist_item['snippet']['title']
-                    video_id = playlist_item['snippet']['resourceId']['videoId']
-                    f.write('%s (%s)\n' % (title, video_id))
-
-                request = self.service.playlistItems(). \
-                    list_next(request, response)
-
-    def _get_playlists(self):
-        playlists = self.service.playlists().list(
+    def _gen_playlists_request(self):
+        request = self.service.playlists().list(
             mine=True, part="snippet", maxResults=50
-        ).execute()
-        return playlists
+        )
+        return request
 
     def _gen_items_request(self, playlist_id):
         request = self.service.playlistItems().list(
             playlistId=playlist_id, part="snippet", maxResults=50)
+        return request
+
+    def _gen_items_next_request(self, request, response):
+        request = self.service.playlistItems().list_next(request, response)
         return request

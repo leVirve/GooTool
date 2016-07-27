@@ -22,7 +22,13 @@ class GoogleClient():
     API_VERSION = 'v2'
     APPLICATION_NAME = 'google-client'
 
-    def __init__(self):
+    def __init__(self, credential=None, client_secret=None):
+        if credential:
+            folder = os.path.dirname(credential)
+            filename = os.path.basename(credential)
+        self.credential_folder = folder if credential else self.CREDENTIAL_FOLDER
+        self.credential_filename = filename if credential else self.CREDENTIAL_FILENAME
+        self.client_secret_file = client_secret or self.CLIENT_SECRET_FILE
         self.credentials = self.get_credentials()
         self.service = self.new_service()
 
@@ -51,7 +57,7 @@ class GoogleClient():
         return discovery.build(self.API_NAME, self.API_VERSION, http=http_auth)
 
     def _gen_auth_flow(self):
-        flow = oauth2client.client.flow_from_clientsecrets(self.CLIENT_SECRET_FILE, self.SCOPES)
+        flow = oauth2client.client.flow_from_clientsecrets(self.client_secret_file, self.SCOPES)
         flow.user_agent = self.APPLICATION_NAME
         return flow
 
@@ -61,8 +67,8 @@ class GoogleClient():
 
     def _get_credential_path(self):
         credential_dir = self._ensure_dir()
-        return os.path.join(credential_dir, self.CREDENTIAL_FILENAME)
+        return os.path.join(credential_dir, self.credential_filename)
 
     def _ensure_dir(self):
-        os.makedirs(self.CREDENTIAL_FOLDER, exist_ok=True)
-        return self.CREDENTIAL_FOLDER
+        os.makedirs(self.credential_folder, exist_ok=True)
+        return self.credential_folder

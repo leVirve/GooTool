@@ -12,8 +12,8 @@ class DriveMan(GoogleClient):
     API_VERSION = 'v2'
     APPLICATION_NAME = 'Drive download'
 
-    def __init__(self, folder='.'):
-        super(DriveMan, self).__init__()
+    def __init__(self, credential=None, client_secret=None, folder='.'):
+        super(DriveMan, self).__init__(credential, client_secret)
         self.folder = folder
 
     def get_metadata(self, file_id):

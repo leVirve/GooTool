@@ -12,8 +12,8 @@ class YoutubeMe(GoogleClient):
     API_NAME = "youtube"
     API_VERSION = 'v3'
 
-    def __init__(self, output='youtube-lists.txt'):
-        super(YoutubeMe, self).__init__()
+    def __init__(self, credential=None, client_secret=None, output='youtube-lists.txt'):
+        super(YoutubeMe, self).__init__(credential, client_secret)
         self.output = output
 
     def get_playlists(self):
